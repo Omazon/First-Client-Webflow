@@ -11,7 +11,7 @@ documentation.
 ## Install
 
 ```bash
-npx skills add Omazon/client-first-skill
+npx skills add Omazon/First-Client-Webflow
 ```
 
 ## What this skill covers
