@@ -1,5 +1,5 @@
 ---
-name: client-first
+name: omazon-webflow-first-client
 description: >-
   Use when building, reviewing, auditing, or refactoring Webflow projects that follow
   the Finsweet Client-First style system. Triggers on any mention of Client-First,
@@ -16,7 +16,7 @@ description: >-
 license: MIT
 metadata:
   author: Omazon
-  version: "1.1.0"
+  version: "1.2.0"
   source: https://finsweet.com/client-first/docs
   repo: https://github.com/Omazon/First-Client-Webflow
   upstream: Finsweet Client-First (unofficial skill)

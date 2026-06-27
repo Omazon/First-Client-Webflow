@@ -5,6 +5,25 @@ All notable changes to this skill will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-06-27
+
+### Changed
+
+- **Skill renamed.** The `name` field in the frontmatter changed from
+  `client-first` to `omazon-webflow-first-client`. The folder the
+  CLI creates on install is now `omazon-webflow-first-client/`
+  instead of `client-first/`.
+
+### Migration
+
+- After updating, re-run `npx skills add Omazon/First-Client-Webflow -y`.
+- The new folder `omazon-webflow-first-client/` will be created.
+- The previous `client-first/` folder (if it exists from a prior
+  install) is now orphaned. Remove it manually if desired:
+  - Windows: `Remove-Item -Recurse ~/.claude/skills/client-first` and/or
+    `Remove-Item -Recurse ~/.agents/skills/client-first`.
+  - macOS/Linux: `rm -rf ~/.claude/skills/client-first ~/.agents/skills/client-first`.
+
 ## [1.1.0] - 2026-06-27
 
 ### Changed
