@@ -14,6 +14,52 @@ documentation.
 npx skills add Omazon/First-Client-Webflow
 ```
 
+## How the skill works (architecture)
+
+This skill uses a **hybrid architecture**:
+
+1. **`SKILL.md` is self-contained** for the ~90% most common cases. It
+   inlines:
+   - The 10 non-negotiable core rules.
+   - The full core structure (page-wrapper, main-wrapper, section_, etc.).
+   - The catalog of most-used utility classes (margin, padding, spacer,
+     text, heading, button, max-width, hide, icon, background-color, etc.).
+   - Rem conversion cheat sheet.
+   - Class naming patterns and decision flowcharts.
+   - Deep stacking limits and output style guidance.
+
+2. **`references/` is on GitHub as deep-dive documentation** for
+   detailed explanations, examples, use cases, and edge cases. The
+   `SKILL.md` includes a routing table with the raw URL for every
+   reference. The agent fetches these on demand.
+
+**Raw URL pattern for deep dive:**
+
+```
+https://raw.githubusercontent.com/Omazon/First-Client-Webflow/main/references/<file>.md
+```
+
+### Important: Agent must support URL fetch
+
+To use the deep dive references, **the agent must be able to fetch raw
+URLs from GitHub**. This is supported by most modern AI coding agents
+(Claude Code, Cursor, Windsurf, Cline, opencode, etc.).
+
+If the agent does not have web fetch capability, the skill still works
+for the most common cases (naming, core structure, utility classes) using
+only the inlined content in `SKILL.md`. Only the detailed guides for
+each topic require the fetch.
+
+### Why this architecture?
+
+`npx skills add <owner>/<repo>` typically copies **only `SKILL.md`** to
+the agent's local skills folder. It does not bundle the `references/`
+folder. By inlining the essentials into `SKILL.md`, the skill works
+correctly with a single `npx skills add` install command. The
+`references/` folder remains on GitHub for human readers, for the agent
+to fetch on demand, and as a complete documentation archive.
+
+
 ## What this skill covers
 
 Client-First is a Webflow style system focused on:

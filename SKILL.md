@@ -16,8 +16,9 @@ description: >-
 license: MIT
 metadata:
   author: Omazon
-  version: "1.0.0"
+  version: "1.1.0"
   source: https://finsweet.com/client-first/docs
+  repo: https://github.com/Omazon/First-Client-Webflow
   upstream: Finsweet Client-First (unofficial skill)
   date: June 2026
 ---
@@ -49,6 +50,26 @@ Activate this skill when the user:
 
 Do not use this skill for general Webflow or CSS questions that are not
 related to the Client-First system.
+
+## Deep dive references (GitHub)
+
+For detailed explanations, examples, and edge cases beyond what is inlined in
+this file, the agent fetches reference documents from the GitHub repository.
+**The agent must be able to fetch raw URLs from GitHub** to use these deep
+dive references.
+
+**Raw URL pattern:**
+
+```
+https://raw.githubusercontent.com/Omazon/First-Client-Webflow/main/references/<file>.md
+```
+
+The full routing table with each file's URL is at the end of this document
+under "Deep dive references (GitHub)".
+
+If the agent cannot fetch URLs, this skill still works for ~90% of cases —
+naming, core structure, core rules, and the most-used utility classes are all
+inlined below. Only the detailed guides for each topic require the fetch.
 
 ## Core rules (non-negotiable)
 
@@ -93,7 +114,7 @@ related to the Client-First system.
 | `container-` | Max-width container | `container-large`, `container-medium`, `container-small` |
 | `max-width-` | Nested max-width | `max-width-small`, `max-width-full` |
 | `spacer-` | One-class empty spacing block | `spacer-large` |
-| `button` | Base button | `button`, `button is-secondary`, `button is-text` |
+| `button` | Base button (use with `is-` variants) | `button`, `button is-secondary`, `button is-text` |
 | `background-color-` | Background color utility | `background-color-primary` |
 | `icon-` | Icon sizing | `icon-1x1-medium`, `icon-height-small` |
 | `hide-` | Responsive hide | `hide-tablet`, `hide-mobile-portrait` |
@@ -102,36 +123,442 @@ related to the Client-First system.
 | `section_` | Custom section wrapper | `section_home`, `section_pricing` |
 | `nav_` | Custom nav folder | `nav_component`, `nav_link` |
 | `form_` | Custom form folder | `form_input`, `form_label` |
-| `page-wrapper` | Core structure outermost | (single instance) |
-| `main-wrapper` | Core structure main | (single instance) |
-| `padding-global` | Site-wide horizontal padding | (single instance) |
+| `page-wrapper` | Core structure outermost | (single instance per page) |
+| `main-wrapper` | Core structure main | (single instance per page) |
+| `padding-global` | Site-wide horizontal padding | (single instance per project) |
 | `inherit-color` | Override color → inherit parent | (single utility) |
 
-## Reference routing
+## Core structure (use on every page)
 
-Load the reference file that matches the user's question. Do not load all
-references — pick the smallest set that answers the question.
+```
+page-wrapper (outermost, no class on <body>)
+└── main-wrapper        (HTML tag: <main>)
+    └── section_home    (HTML tag: <section>)
+        └── padding-global
+            └── padding-section-large
+                └── container-large
+                    └── (content)
+```
 
-| Topic | Reference file | When to load |
-| --- | --- | --- |
-| Intro, goals, naming convention mindset | `references/00-overview.md` | First time user asks "what is Client-First" or wants the philosophy |
-| Custom / utility / global / combo class types, no deep stacking | `references/01-classes-strategy-1.md` | User asks about class types or naming |
-| `page-wrapper` / `main-wrapper` / `section_` / `padding-global` / `container-*` / `padding-section-*` | `references/02-core-structure.md` | User asks about page structure, padding, containers, sections |
-| rem math, browser font size, px to rem conversions | `references/03-sizes-and-rem.md` | User asks about units, rem, px, accessibility scaling |
-| `heading-style-h#`, `text-size-*`, `text-color-*`, default HTML tag styles | `references/04-typography-strategy.md` | User asks about text, headings, typography |
-| Spacing blocks, spacing wrappers, custom class spacing, CSS Grid spacing, `spacer-*` responsive combos | `references/05-spacing-strategy.md` | User asks about margin, padding, spacing, gaps |
-| Full catalog of CF utility classes (sizes, structure, display, hide, etc.) | `references/06-utility-class-systems.md` | User asks "what utility classes are available" or needs exact class names |
-| Custom class creation, when to use them, deep stacking limits, combo class strategy, no layout system | `references/07-classes-strategy-2.md` | User asks when to create a custom class, combo class decisions, or layout |
-| Folders feature (Finsweet Extension), underscore folder system, utility folder system | `references/08-folders.md` | User asks about Folders, organizing classes, underscore conventions |
-| Folder strategies (one vs nested, page-name, reusable, components) | `references/09-folders-strategy.md` | User asks how to structure folders for a project type |
-| Color Variables (primitive + semantic tokens), naming, grouping | `references/10-variables.md` | User asks about color tokens, variables, theming |
-| Interaction naming convention `Element [Action State]` | `references/11-interactions-naming.md` | User asks how to name Webflow Interactions / animations |
-| Fluid Responsive (root-font scaling) | `references/12-fluid-responsive.md` | User asks about fluid responsive, scaling, vw vs rem |
-| Semantic HTML tags (`<header>`, `<main>`, `<section>`, `<article>`, etc.) | `references/13-semantic-html.md` | User asks about HTML semantics, tag choice, SEO structure |
-| Accessibility (keyboard nav, ARIA, focus, alt text) | `references/14-accessibility.md` | User asks about a11y, screen readers, keyboard navigation |
-| Global Styles embed snippets (text clarity, focus state, container centerizer, etc.) | `references/15-global-styles-embed.md` | User asks about the global CSS embed block, custom CSS overrides |
-| CSS Specificity (why margin classes overwrite, order of creation, !important) | `references/16-css-specificity.md` | User asks why a utility class is not working or being overridden |
-| Client-First v1 to v2 migration changes | `references/17-v1-to-v2.md` | User has a v1 project, asks about renaming, `page-padding` → `padding-global`, etc. |
+| Class | Purpose | HTML tag | CSS key properties |
+| --- | --- | --- | --- |
+| `page-wrapper` | Outermost parent of all page content | div | Optional. Limit body styles to typography and `background-color` only. |
+| `main-wrapper` | Main content of the page. Nav and footer outside. | **`<main>`** | Optional. Accessibility. |
+| `section_[id]` | One section per logical content block. All sections live in the `section_` folder. | **`<section>`** | Avoid styling. For dark/light variant use `is-style-dark` combo. |
+| `padding-global` | Site-wide left/right padding | div | Only `padding-left` and `padding-right`. |
+| `padding-section-[size]` | Top/bottom padding for sections. Apply to the same div as `padding-global`. | div | Only `padding-top` and `padding-bottom`. |
+| `container-[size]` | Centered, max-width wrapper. `margin: 0 auto`, `width: 100%`, `max-width`. | div | `small` ≈ 48rem, `medium` ≈ 64rem, `large` ≈ 80rem (editable). |
+
+### Section naming examples
+
+```
+section_home
+section_about
+section_how-it-works
+section_testimonials
+section_pricing
+section_cta
+section_faq
+```
+
+### Container sizes
+
+```
+container-small
+container-medium
+container-large
+```
+
+### Section padding sizes
+
+```
+padding-section-small
+padding-section-medium
+padding-section-large
+```
+
+### Core structure flexibility
+
+`padding-global` is decoupled from `container-*` so they can be used
+independently. Place `padding-global` as a parent, a child, or together with
+the container.
+
+## Most-used utility classes (catalog)
+
+### Margin direction
+
+```
+margin-top
+margin-bottom
+margin-left
+margin-right
+margin-horizontal
+margin-vertical
+```
+
+### Margin size
+
+| Class | Value |
+| --- | ---: |
+| `margin-0` | 0rem |
+| `margin-tiny` | 0.125rem |
+| `margin-xxsmall` | 0.25rem |
+| `margin-xsmall` | 0.5rem |
+| `margin-small` | 1rem |
+| `margin-medium` | 2rem |
+| `margin-large` | 3rem |
+| `margin-xlarge` | 4rem |
+| `margin-xxlarge` | 5rem |
+| `margin-huge` | 6rem |
+| `margin-xhuge` | 8rem |
+| `margin-xxhuge` | 12rem |
+| `margin-custom1` | 1.5rem |
+| `margin-custom2` | 2.5rem |
+| `margin-custom3` | 3.5rem |
+
+### Padding direction
+
+```
+padding-top
+padding-bottom
+padding-left
+padding-right
+padding-horizontal
+padding-vertical
+```
+
+### Padding size
+
+| Class | Value |
+| --- | ---: |
+| `padding-0` | 0rem |
+| `padding-tiny` | 0.125rem |
+| `padding-xxsmall` | 0.25rem |
+| `padding-xsmall` | 0.5rem |
+| `padding-small` | 1rem |
+| `padding-medium` | 2rem |
+| `padding-large` | 3rem |
+| `padding-xlarge` | 4rem |
+| `padding-xxlarge` | 5rem |
+| `padding-huge` | 6rem |
+| `padding-xhuge` | 8rem |
+| `padding-xxhuge` | 12rem |
+| `padding-custom1` | 1.5rem |
+| `padding-custom2` | 2.5rem |
+| `padding-custom3` | 3.5rem |
+
+### Spacer system (one-class spacing block)
+
+Empty Div Block that creates space between sibling elements. Supports `is-`
+responsive combo classes.
+
+```
+spacer-tiny       (0.125rem)
+spacer-xxsmall    (0.25rem)
+spacer-xsmall     (0.5rem)
+spacer-small      (1rem)
+spacer-medium     (2rem)
+spacer-large      (3rem)
+spacer-xlarge     (4rem)
+spacer-xxlarge    (5rem)
+spacer-huge       (6rem)
+spacer-xhuge      (8rem)
+spacer-xxhuge     (12rem)
+spacer-custom1    (1.5rem)
+spacer-custom2    (2.5rem)
+spacer-custom3    (3.5rem)
+```
+
+Responsive combo: `spacer-large is-mobile-small`.
+
+### Heading style switch
+
+Change a Heading's style without changing its tag. Use when the SEO tag and
+the visual style don't match.
+
+```
+heading-style-h1
+heading-style-h2
+heading-style-h3
+heading-style-h4
+heading-style-h5
+heading-style-h6
+```
+
+Example: `H1 + heading-style-h2` — visually H2, semantically H1 for SEO.
+
+### Text size
+
+```
+text-size-tiny
+text-size-small
+text-size-regular
+text-size-medium
+text-size-large
+```
+
+### Text style
+
+```
+text-style-allcaps
+text-style-italic
+text-style-link
+text-style-muted
+text-style-nowrap
+text-style-quote
+text-style-strikethrough
+text-style-2lines
+text-style-3lines
+```
+
+### Text weight
+
+```
+text-weight-xbold
+text-weight-bold
+text-weight-semibold
+text-weight-normal
+text-weight-light
+```
+
+### Text alignment
+
+```
+text-align-left
+text-align-center
+text-align-right
+```
+
+### Text color
+
+```
+text-color-primary
+text-color-secondary
+text-color-alternate
+```
+
+### Buttons
+
+```
+button
+button is-secondary
+button is-text
+```
+
+### Max width (nested)
+
+Use `container-*` for the primary outer max-width. Use `max-width-*` for
+nested cases.
+
+```
+max-width-xxlarge   (80rem)
+max-width-xlarge    (64rem)
+max-width-large     (48rem)
+max-width-medium    (32rem)
+max-width-small     (20rem)
+max-width-xsmall    (16rem)
+max-width-xxsmall   (12rem)
+```
+
+`max-width-full` (and `-tablet`, `-mobile-landscape`, `-mobile-portrait`)
+sets `max-width: none` at the corresponding breakpoint.
+
+### Hide
+
+```
+hide
+hide-tablet
+hide-mobile-landscape
+hide-mobile-portrait
+```
+
+### Icon sizes
+
+```
+icon-height-small
+icon-height-medium
+icon-height-large
+icon-1x1-small
+icon-1x1-medium
+icon-1x1-large
+```
+
+### Background colors
+
+```
+background-color-primary
+background-color-secondary
+background-color-tertiary
+background-color-alternate
+```
+
+### Other useful utilities
+
+```
+display-inlineflex
+z-index-1
+z-index-2
+align-center
+layer
+pointer-events-none
+pointer-events-auto
+overflow-hidden
+overflow-scroll
+overflow-auto
+aspect-ratio-square
+aspect-ratio-portrait
+aspect-ratio-landscape
+aspect-ratio-widescreen
+inherit-color
+spacing-clean   # sets all margin and padding to 0
+```
+
+## Rem conversions (cheat sheet)
+
+| px | rem |
+| ---: | ---: |
+| 1 | 1px (borders only) |
+| 2 | 0.125 |
+| 4 | 0.25 |
+| 8 | 0.5 |
+| 12 | 0.75 |
+| 14 | 0.875 (typography) |
+| 16 | 1 |
+| 24 | 1.5 |
+| 32 | 2 |
+| 40 | 2.5 |
+| 48 | 3 |
+| 64 | 4 |
+| 80 | 5 |
+| 96 | 6 |
+| 128 | 8 |
+| 192 | 12 |
+
+**Rule:** every rem conversion is a multiple of 16. Convert px to rem by
+dividing by 16.
+
+**Exceptions:** 14px = 0.875rem (typography), 2px = 0.125rem (tiny
+spacing), 1px = 1px (borders, retina).
+
+**Accessibility:** rem respects browser font size and browser zoom. `px` and
+`vw`/`vh` do not.
+
+## Class name patterns
+
+### General-to-specific naming
+
+Within a class name, keywords go from general to specific.
+
+```
+text-size-large              # text (general) → size (CSS prop) → large (value)
+team-list_headshot-wrapper   # team-list (folder) → headshot (element) → wrapper (role)
+```
+
+This powers intelligent search in the Styles panel and clean Folders.
+
+### Custom class (uses underscore)
+
+```
+team-list_headshot-wrapper
+home-hero_title
+nav_component
+form_input
+section_home
+clients-slider_arrow
+```
+
+### Utility class (dashes only, no underscore)
+
+```
+text-size-large
+margin-bottom
+padding-global
+container-large
+button is-secondary
+heading-style-h2
+```
+
+### Combo class (uses `is-` prefix)
+
+The base class is first. The `is-` variant only works on top of the base.
+
+```
+button is-brand
+button is-secondary
+button is-text
+section_home is-dark
+section_header is-home
+text-size-large is-mobile-small
+spacer-large is-home-tabs
+```
+
+### Form pattern
+
+```
+form_component
+form_wrapper
+form_block
+form_label
+form_input
+form_submit
+```
+
+## Decision flowcharts
+
+### Class type decision
+
+```
+Is this CSS property used in many places globally?
+├── YES → Utility class (margin-large, text-size-large)
+└── NO
+    ├── Is it a reusable component? → Custom class (nav_component, clients-slider_component)
+    └── Is it one instance only? → Custom class (about-hero_title, footer_copyright-text)
+```
+
+### Spacing decision
+
+```
+Need equal spacing across a list of siblings?
+├── YES → CSS Grid on the parent wrapper
+└── NO
+    ├── Standard spacing between two elements?
+    │   ├── Need responsive overrides → spacer-[size] (one-class block, supports is-)
+    │   └── No responsive needs → padding-[direction] padding-[size] (two-class block)
+    ├── Spacing for a recurring element (form_input, footer_link) → custom class with margin/padding
+    └── One-off unique spacing → custom class with specific margin/padding
+```
+
+### Typography decision
+
+```
+Does the text match the default H1-H6 / body style?
+├── YES → No class. Let the default tag style apply.
+└── NO
+    ├── Is it a common variation used in many places? → utility class
+    │   Examples: text-size-large + text-color-primary + text-weight-semibold
+    ├── Is it a "mismatch" between SEO tag and visual size? → heading-style-h#
+    │   Example: H1 element + heading-style-h2
+    └── Is it specific to one element or a group? → custom class
+        Examples: footer_copyright-text, footer_link, faq-template_heading-text
+```
+
+### Spacing on a text element
+
+```
+DON'T do: H3 + margin-bottom (deep stacks with typography)
+DO: H3 alone, then a sibling spacing block (spacer-small) for the gap
+```
+
+Spacing classes should not stack directly on a Heading or Paragraph.
+
+## Deep stacking limits
+
+| Classes on an element | Verdict |
+| ---: | --- |
+| 1 or 2 | Great. Common. |
+| 3 | OK, but question whether 3 are needed. |
+| 4 | Absolute maximum. Are all 4 really needed? |
+| 5+ | Too much. Create a custom class. |
 
 ## Output style for the agent
 
@@ -141,7 +568,7 @@ references — pick the smallest set that answers the question.
   structure** (`page-wrapper` > `main-wrapper` > `section_[id]` > `padding-global` > `container-[size]`).
 - When proposing a spacing solution, **prefer utility spacing first**
   (blocks / wrappers / `spacer-*`) and only fall back to a custom class
-  with margin/padding when there is a clear use case (per `references/05`).
+  with margin/padding when there is a clear use case.
 - When proposing a typography solution, **prefer no class on text by
   default** — only add `text-*` or `heading-style-h#` when there is a
   variation.
@@ -153,6 +580,34 @@ references — pick the smallest set that answers the question.
   covered, propose a new utility or custom class following the conventions
   and explain the rationale.
 
+## Deep dive references (GitHub)
+
+For detailed explanations, examples, use cases, and edge cases, fetch the
+corresponding reference from GitHub. The agent must support raw URL fetch.
+
+**Base URL:** `https://raw.githubusercontent.com/Omazon/First-Client-Webflow/main/references/`
+
+| Topic | File | Full URL |
+| --- | --- | --- |
+| Intro, goals, naming mindset | `00-overview.md` | https://raw.githubusercontent.com/Omazon/First-Client-Webflow/main/references/00-overview.md |
+| Custom / utility / global / combo types, no deep stacking | `01-classes-strategy-1.md` | https://raw.githubusercontent.com/Omazon/First-Client-Webflow/main/references/01-classes-strategy-1.md |
+| `page-wrapper` / `main-wrapper` / `section_` / `padding-global` / `container-*` / `padding-section-*` | `02-core-structure.md` | https://raw.githubusercontent.com/Omazon/First-Client-Webflow/main/references/02-core-structure.md |
+| rem math, browser font size, px to rem conversions | `03-sizes-and-rem.md` | https://raw.githubusercontent.com/Omazon/First-Client-Webflow/main/references/03-sizes-and-rem.md |
+| `heading-style-h#`, `text-size-*`, default HTML tag styles | `04-typography-strategy.md` | https://raw.githubusercontent.com/Omazon/First-Client-Webflow/main/references/04-typography-strategy.md |
+| Spacing blocks, wrappers, custom class spacing, CSS Grid, `spacer-*` responsive combos | `05-spacing-strategy.md` | https://raw.githubusercontent.com/Omazon/First-Client-Webflow/main/references/05-spacing-strategy.md |
+| Full catalog of CF utility classes with examples | `06-utility-class-systems.md` | https://raw.githubusercontent.com/Omazon/First-Client-Webflow/main/references/06-utility-class-systems.md |
+| Custom class creation, deep stacking limits, combo class strategy, no layout system | `07-classes-strategy-2.md` | https://raw.githubusercontent.com/Omazon/First-Client-Webflow/main/references/07-classes-strategy-2.md |
+| Folders feature (Finsweet Extension), underscore folder system, utility folder system | `08-folders.md` | https://raw.githubusercontent.com/Omazon/First-Client-Webflow/main/references/08-folders.md |
+| Folder strategies (one vs nested, page-name, reusable, components) | `09-folders-strategy.md` | https://raw.githubusercontent.com/Omazon/First-Client-Webflow/main/references/09-folders-strategy.md |
+| Color Variables (primitive + semantic tokens), naming, grouping | `10-variables.md` | https://raw.githubusercontent.com/Omazon/First-Client-Webflow/main/references/10-variables.md |
+| Interaction naming convention `Element [Action State]` | `11-interactions-naming.md` | https://raw.githubusercontent.com/Omazon/First-Client-Webflow/main/references/11-interactions-naming.md |
+| Fluid Responsive (root-font scaling) | `12-fluid-responsive.md` | https://raw.githubusercontent.com/Omazon/First-Client-Webflow/main/references/12-fluid-responsive.md |
+| Semantic HTML tags (`<header>`, `<main>`, `<section>`, etc.) | `13-semantic-html.md` | https://raw.githubusercontent.com/Omazon/First-Client-Webflow/main/references/13-semantic-html.md |
+| Accessibility (keyboard nav, ARIA, focus, alt text) | `14-accessibility.md` | https://raw.githubusercontent.com/Omazon/First-Client-Webflow/main/references/14-accessibility.md |
+| Global Styles embed snippets | `15-global-styles-embed.md` | https://raw.githubusercontent.com/Omazon/First-Client-Webflow/main/references/15-global-styles-embed.md |
+| CSS Specificity (why margin classes overwrite, order of creation) | `16-css-specificity.md` | https://raw.githubusercontent.com/Omazon/First-Client-Webflow/main/references/16-css-specificity.md |
+| Client-First v1 to v2 migration changes | `17-v1-to-v2.md` | https://raw.githubusercontent.com/Omazon/First-Client-Webflow/main/references/17-v1-to-v2.md |
+
 ## Source
 
 - All content adapted from Finsweet Client-First documentation:
@@ -161,3 +616,4 @@ references — pick the smallest set that answers the question.
 - Open the [official Cloneable](https://finsweet.info/client-first-cloneable)
   and the [official site](https://finsweet.com/client-first/) for the full
   experience.
+- This skill repository: https://github.com/Omazon/First-Client-Webflow

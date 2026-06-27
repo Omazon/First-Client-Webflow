@@ -5,6 +5,44 @@ All notable changes to this skill will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-06-27
+
+### Changed
+
+- **Architecture: hybrid (inline + GitHub refs).** `SKILL.md` is now
+  self-contained for the most common cases (~90% of usage). The
+  essential content is inlined directly:
+  - The 10 non-negotiable core rules.
+  - The full core structure (page-wrapper, main-wrapper, section_,
+    padding-global, container-*, padding-section-*).
+  - The catalog of most-used utility classes (margin, padding, spacer,
+    text, heading, button, max-width, hide, icon, background-color,
+    display helpers).
+  - Rem conversion cheat sheet.
+  - Class naming patterns and decision flowcharts.
+  - Deep stacking limits and output style guidance.
+- `SKILL.md` now includes the raw GitHub URL for every file in
+  `references/` so the agent can fetch deep-dive documentation on
+  demand.
+- README expanded with a "How the skill works" section explaining the
+  hybrid architecture and the web-fetch requirement.
+
+### Why
+
+- `npx skills add <owner>/<repo>` only copies `SKILL.md` to the
+  agent's local skills folder. It does not bundle `references/`.
+- The previous v1.0.0 architecture assumed the agent had access to the
+  `references/` folder locally, which is not the case with the
+  standard install command.
+- Inlining the essentials into `SKILL.md` makes the skill work
+  correctly with a single `npx skills add` install.
+
+### Migration
+
+No action required for users who already installed v1.0.0. Re-run
+`npx skills add Omazon/First-Client-Webflow -y` to pick up the new
+`SKILL.md`. The `references/` folder remains on GitHub unchanged.
+
 ## [1.0.0] - 2026-06-27
 
 ### Added
@@ -29,8 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     conventions.
   - `09-folders-strategy.md` — One vs nested folders, page-name
     strategy, component libraries.
-  - `10-variables.md` — Color variables with primitive and semantic
-    token architecture.
+  - `10-variables.md` — Color variables with primitive + semantic token
+    architecture.
   - `11-interactions-naming.md` — `Element [Action State]` convention.
   - `12-fluid-responsive.md` — Root-font scaling.
   - `13-semantic-html.md` — Proper HTML semantics in Webflow.
